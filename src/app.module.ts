@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ScpiModule } from './scpi/scpi.module';
+import { ScpiUnitsModule } from './scpi/scpi.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { UsersModule } from './users/users.module';
 
@@ -20,7 +20,7 @@ import { UsersModule } from './users/users.module';
       synchronize: true,
     }),
     UsersModule,
-    ScpiModule,
+    ScpiUnitsModule,
     SubscriptionsModule,
   ],
   controllers: [AppController],
