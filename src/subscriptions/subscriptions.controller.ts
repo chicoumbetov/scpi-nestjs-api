@@ -1,34 +1,37 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { SubscriptionsService } from './subscriptions.service';
-import { CreateSubscriptionDto } from './dto/create-subscription.dto';
-import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
+
+class CreateSubscriptionDto {
+  userId: number;
+  scpiUnitId: number;
+  desiredUnits: number;
+}
 
 @Controller('subscriptions')
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
   @Post()
-  create(@Body() createSubscriptionDto: CreateSubscriptionDto) {
-    return this.subscriptionsService.create(createSubscriptionDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.subscriptionsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.subscriptionsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSubscriptionDto: UpdateSubscriptionDto) {
-    return this.subscriptionsService.update(+id, updateSubscriptionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subscriptionsService.remove(+id);
+  async createSubscription(
+    @Body() createSubscriptionDto: CreateSubscriptionDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const subscription = await this.subscriptionsService.subscribeToScpi(
+        createSubscriptionDto.userId,
+        createSubscriptionDto.scpiUnitId,
+        createSubscriptionDto.desiredUnits,
+      );
+      return res.status(HttpStatus.CREATED).json({
+        message: 'Subscription successful!',
+        subscription: subscription,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        message: 'Subscription failed.',
+        error: error.message,
+      });
+    }
   }
 }
