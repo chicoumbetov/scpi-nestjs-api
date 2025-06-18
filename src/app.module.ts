@@ -1,12 +1,28 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
 import { ScpiModule } from './scpi/scpi.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [UsersModule, ScpiModule, SubscriptionsModule],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'root',
+      database: 'scpi-nestjs-api',
+      entities: [],
+      synchronize: true,
+    }),
+    UsersModule,
+    ScpiModule,
+    SubscriptionsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
