@@ -1,98 +1,160 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# SCPI - Backend Application
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+---
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Project Overview
 
-## Description
+This project is the backend application for **SCPI**, a simulated fintech product focused on **Sociétés Civiles de Placement Immobilier (SCPI)** – French real estate investment trusts. It demonstrates robust backend development practices, particularly in handling financial transactions, data integrity, and concurrency using modern technologies.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The core functionality showcased is the **SCPI Unit Subscription process**, which is implemented with a strong emphasis on transactional integrity using ACID properties.
 
-## Project setup
+---
+
+## Features
+
+- **User Management**: Basic user (investor) creation and retrieval.
+- **SCPI Unit Management**: Definition and retrieval of available SCPI units with their prices.
+- **Transactional Subscriptions**: Securely handles the purchase of SCPI units by investors, ensuring:
+  - **Atomicity**: Funds are deducted, and units are allocated as a single, indivisible operation. If any step fails (e.g., insufficient funds), the entire operation is rolled back, leaving the database in its original state.
+  - **Consistency**: Adheres to business rules, such as checking for sufficient user balance before a transaction proceeds.
+  - **Isolation**: Uses pessimistic locking (`pessimistic_write`) to prevent race conditions during concurrent subscription attempts, ensuring data accuracy even under heavy load.
+  - **Durability**: Committed transactions are permanently stored, surviving system failures.
+- **Subscription Tracking**: Records the status of each subscription (PENDING, COMPLETED, FAILED) for auditing and traceability.
+- **Robust Error Handling**: Gracefully manages errors within transactions, rolling back changes and logging failures.
+- **Logging**: Implements request/response logging using NestJS Interceptors for observability.
+
+---
+
+## Technologies Used
+
+- **Backend Framework**: [NestJS](https://nestjs.com/) (Node.js framework for building efficient, reliable and scalable server-side applications)
+- **ORM**: [TypeORM](https://typeorm.io/) (Object-Relational Mapper for TypeScript and JavaScript)
+- **Database**: [PostgreSQL](https://www.postgresql.org/) (Robust, open-source relational database)
+- **Language**: [TypeScript](https://www.typescriptlang.org/) (Typed superset of JavaScript that compiles to plain JavaScript)
+- **Dependency Management**: npm
+
+---
+
+## Architecture Highlights
+
+The application follows a modular and layered architecture, typical for NestJS applications:
+
+- **Modules**: Features are organized into distinct modules (`UsersModule`, `ScpiUnitsModule`, `SubscriptionsModule`).
+- **Services**: Contains the business logic, interacting with the database via TypeORM Repositories. The `SubscriptionsService` prominently features transactional logic.
+- **Controllers**: Handle incoming HTTP requests and delegate to the services.
+- **Entities**: TypeORM entities define the database schema and relationships.
+- **Interceptors**: Used for cross-cutting concerns like request/response logging, demonstrating AOP (Aspect-Oriented Programming) principles.
+
+---
+
+## How to Run Locally
+
+To get this project up and running on your local machine, follow these steps:
+
+### 1. Prerequisites
+
+- **Node.js**: Make sure you have Node.js (LTS version recommended) installed.
+- **PostgreSQL**: Install and set up a PostgreSQL database server.
+
+### 2. Database Setup
+
+1.  Create a new PostgreSQL database for this project (e.g., `scpi`).
+
+    ```sql
+    CREATE DATABASE scpi;
+    ```
+
+2.  Ensure you have a user with appropriate permissions for this database. Update the connection details in `ormconfig.json` (or your `AppModule` TypeORM configuration).
+
+### 3. Clone the Repository
 
 ```bash
-$ npm install
+git clone <repository_url_here>
+cd scpi-nestjs-api
 ```
 
-## Compile and run the project
+4. Install Dependencies
 
-```bash
-# development
-$ npm run start
+```Bash
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+5. Configure Database Connection
+   Open ormconfig.json (or the TypeORM configuration in src/app.module.ts) and update the database credentials to match your PostgreSQL setup:
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```JSON
+// ormconfig.json (example)
+{
+  "type": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "username": "your_pg_username", // <-- UPDATE THIS
+  "password": "your_pg_password", // <-- UPDATE THIS
+  "database": "scpi-nestjs-api",
+  "entities": ["dist/**/*.entity{.ts,.js}"],
+  "synchronize": true // For development, set to false in production and use migrations
+}
 ```
 
-## Deployment
+6. Run the Application
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```Bash
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The application will start on http://localhost:3000.
 
-## Resources
+API Endpoints (Examples)
+You can use tools like Postman, Insomnia, or curl to test the endpoints.
 
-Check out a few resources that may come in handy when working with NestJS:
+1. Create a User
+   POST /users
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```JSON
+{
+  "email": "investor@example.com",
+  "initialBalance": 5000.00
+}
+```
 
-## Support
+2. Create an SCPI Unit
+   POST /scpi-units
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```JSON
 
-## Stay in touch
+{
+  "name": "SCPI",
+  "price": 200.00
+}
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+3. Subscribe to SCPI Units (Transactional)
+   This is the core transactional endpoint.
 
-## License
+POST /subscriptions
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```JSON
+
+{
+  "userId": 1,        // ID of the user created above
+  "scpiUnitId": 1,    // ID of the SCPI unit created above
+  "desiredUnits": 5   // Number of units to subscribe to
+}
+```
+
+Expected Behavior:
+
+- \*\*Success: If the user has sufficient balance, their balance will decrease, their scpiUnitsOwned will increase, and a COMPLETED subscription record will be created.
+- \*\*Failure (e.g., Insufficient Funds): The transaction will be rolled back. The user's balance and SCPI unit count will remain unchanged, and a FAILED subscription record will be created with a reason.
+
+## Learning & Development Insights
+
+This project provided a practical opportunity to deepen my understanding and application of:
+
+- **Database Transactions**: Implementing and testing ACID properties, especially Atomicity and Isolation, which are paramount in financial applications.
+- **Pessimistic Locking**: Using FOR UPDATE (via pessimistic_write in TypeORM) to prevent race conditions and ensure data integrity in high-concurrency scenarios.
+- **TypeORM QueryRunner**: Gaining hands-on experience with TypeORM's lower-level transaction management API for fine-grained control.
+- **NestJS Architecture**: Reinforcing modular design principles, dependency injection, and the use of pipes/interceptors for common concerns.
+- **Error Handling Strategies**: Developing robust error handling within a transactional context to ensure data consistency.
