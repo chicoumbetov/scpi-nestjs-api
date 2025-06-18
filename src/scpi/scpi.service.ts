@@ -1,26 +1,28 @@
-import { Injectable } from '@nestjs/common';
-import { CreateScpiDto } from './dto/create-scpi.dto';
-import { UpdateScpiDto } from './dto/update-scpi.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ScpiUnit } from './entities/scpi.entity';
 
 @Injectable()
-export class ScpiService {
-  create(createScpiDto: CreateScpiDto) {
-    return 'This action adds a new scpi';
+export class ScpiUnitsService {
+  constructor(
+    @InjectRepository(ScpiUnit)
+    private scpiUnitsRepository: Repository<ScpiUnit>,
+  ) {}
+
+  async findOne(id: number): Promise<ScpiUnit> {
+    const scpiUnit = await this.scpiUnitsRepository.findOne({ where: { id } });
+    if (!scpiUnit) {
+      throw new NotFoundException(`SCPI Unit with ID ${id} not found.`);
+    }
+    return scpiUnit;
   }
 
-  findAll() {
-    return `This action returns all scpi`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} scpi`;
-  }
-
-  update(id: number, updateScpiDto: UpdateScpiDto) {
-    return `This action updates a #${id} scpi`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} scpi`;
+  async createScpiUnit(name: string, price: number): Promise<ScpiUnit> {
+    const newUnit = this.scpiUnitsRepository.create({
+      name,
+      pricePerUnit: price,
+    });
+    return this.scpiUnitsRepository.save(newUnit);
   }
 }
