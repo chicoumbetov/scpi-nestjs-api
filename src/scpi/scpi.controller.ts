@@ -1,34 +1,54 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ScpiService } from './scpi.service';
-import { CreateScpiDto } from './dto/create-scpi.dto';
-import { UpdateScpiDto } from './dto/update-scpi.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
+import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
 
-@Controller('scpi')
-export class ScpiController {
-  constructor(private readonly scpiService: ScpiService) {}
+import { CreateScpiUnitDto } from './dto/create-scpi.dto';
+import { ScpiUnit } from './entities/scpi.entity';
+import { ScpiUnitsService } from './scpi.service';
 
+@Controller('scpi-units')
+@UseInterceptors(LoggingInterceptor)
+export class ScpiUnitsController {
+  constructor(private readonly scpiUnitsService: ScpiUnitsService) {}
+
+  /**
+   * Creates a new SCPI unit.
+   * POST /scpi-units
+   * @param createScpiUnitDto The data for creating the SCPI unit.
+   * @returns The newly created SCPI unit.
+   */
   @Post()
-  create(@Body() createScpiDto: CreateScpiDto) {
-    return this.scpiService.create(createScpiDto);
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() createScpiUnitDto: CreateScpiUnitDto): Promise<ScpiUnit> {
+    return this.scpiUnitsService.create(createScpiUnitDto);
   }
 
+  /**
+   * Retrieves all SCPI units.
+   * GET /scpi-units
+   * @returns A list of all SCPI units.
+   */
   @Get()
-  findAll() {
-    return this.scpiService.findAll();
+  findAll(): Promise<ScpiUnit[]> {
+    return this.scpiUnitsService.findAll();
   }
 
+  /**
+   * Retrieves a single SCPI unit by ID.
+   * GET /scpi-units/:id
+   * @param id The ID of the SCPI unit.
+   * @returns The SCPI unit with the given ID.
+   */
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.scpiService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateScpiDto: UpdateScpiDto) {
-    return this.scpiService.update(+id, updateScpiDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.scpiService.remove(+id);
+  findOne(@Param('id') id: string): Promise<ScpiUnit> {
+    return this.scpiUnitsService.findOne(+id);
   }
 }
