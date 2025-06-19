@@ -10,14 +10,16 @@ import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'postgres',
       host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'root',
+      port: 5432,
+      username: 'postgres',
+      password: 'postgres',
       database: 'scpi-nestjs-api',
-      entities: [],
-      synchronize: true,
+      // entities: [User, ScpiUnit, Subscription],
+      entities: [__dirname + '/entities/*.entity{.ts,.js}'],
+      synchronize: true, // Set to false in production and use migrations
+      logging: ['error', 'warn', 'schema'], // Helps to see more TypeORM logs
     }),
     UsersModule,
     ScpiUnitsModule,
